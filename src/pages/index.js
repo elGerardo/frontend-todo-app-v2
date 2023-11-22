@@ -2,12 +2,30 @@ import { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import { motion } from "framer-motion";
 import useWindowSize from "@/hooks/useWindowsSize";
+import useUser from "../store/userUser";
+import { useField } from "@/store/useField";
 
 export default function Welcome() {
   //states
   const [isWelcome, setIsWelcome] = useState(true);
   const [isLogin, setIsLogin] = useState(true);
-  const size = useWindowSize()
+  const { createAccount } = useUser();
+  const username = useField({
+    type: "text",
+    required: true,
+    placeholder: "Username",
+  });
+  const password = useField({
+    type: "text",
+    required: true,
+    placeholder: "Password",
+  });
+  const confirmPassword = useField({
+    type: "text",
+    required: true,
+    placeholder: "Confirm Password",
+  });
+  const size = useWindowSize();
 
   //callbacks
   const handleGetStarted = () => {
@@ -17,8 +35,12 @@ export default function Welcome() {
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
       {!isWelcome ? (
-        <div className={`rounded shadow-lg p-5 ${size.width <= 990 ? 'w-100' : 'w-50'}`}>
-          <h1 className="text-center mb-4 h1-gradient">ToDo App</h1> 
+        <div
+          className={`rounded shadow-lg p-5 ${
+            size.width <= 990 ? "w-100" : "w-50"
+          }`}
+        >
+          <h1 className="text-center mb-4 h1-gradient">ToDo App</h1>
           <Button
             onClick={() => setIsLogin(true)}
             style={
@@ -71,17 +93,22 @@ export default function Welcome() {
               <p>Good to see you again</p>
               <Form>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                  <Form.Control type="text" placeholder="Username" required />
+                  <Form.Control {...username} />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicPassword">
-                  <Form.Control
-                    type="password"
-                    placeholder="Password"
-                    required
-                  />
+                  <Form.Control {...password} />
                 </Form.Group>
                 <div className="w-100 d-flex justify-content-center">
-                  <Button variant="primary" type="submit" className="w-75">
+                  <Button
+                    variant="primary"
+                    className="w-75"
+                    onClick={() =>
+                      createAccount({
+                        username: username.value,
+                        password: password.value,
+                      })
+                    }
+                  >
                     Login
                   </Button>
                 </div>
@@ -105,24 +132,25 @@ export default function Welcome() {
               <p>Get started now!</p>
               <Form>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                  <Form.Control type="text" placeholder="Username" required />
+                  <Form.Control {...username} />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicPassword">
-                  <Form.Control
-                    type="password"
-                    placeholder="Password"
-                    required
-                  />
+                  <Form.Control {...password} />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicPassword">
-                  <Form.Control
-                    type="password"
-                    placeholder="Confirm Password"
-                    required
-                  />
+                  <Form.Control {...confirmPassword} />
                 </Form.Group>
                 <div className="w-100 d-flex justify-content-center">
-                  <Button variant="primary" type="submit" className="w-75">
+                  <Button
+                    variant="primary"
+                    className="w-75"
+                    onClick={() =>
+                      createAccount({
+                        username: username.value,
+                        password: password.value,
+                      })
+                    }
+                  >
                     Create Account
                   </Button>
                 </div>
