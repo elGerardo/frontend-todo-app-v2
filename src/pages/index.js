@@ -1,27 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import { motion } from "framer-motion";
 import useWindowSize from "@/hooks/useWindowsSize";
 import useUser from "../store/userUser";
 import { useField } from "@/store/useField";
+import { useRouter } from "next/router";
 
 export default function Welcome() {
   //states
+  const router = useRouter();
   const [isWelcome, setIsWelcome] = useState(true);
   const [isLogin, setIsLogin] = useState(true);
-  const { createAccount } = useUser();
-  const username = useField({
+  const { createAccount, login, user, errors } = useUser();
+
+  const loginUsername = useField({
     type: "text",
     required: true,
     placeholder: "Username",
   });
-  const password = useField({
-    type: "text",
+  const loginPassword = useField({
+    type: "password",
     required: true,
     placeholder: "Password",
   });
-  const confirmPassword = useField({
+
+  const createUsername = useField({
     type: "text",
+    required: true,
+    placeholder: "Username",
+  });
+  const createPassword = useField({
+    type: "password",
+    required: true,
+    placeholder: "Password",
+  });
+  const createConfirmPassword = useField({
+    type: "password",
     required: true,
     placeholder: "Confirm Password",
   });
@@ -32,14 +46,37 @@ export default function Welcome() {
     setIsWelcome(false);
   };
 
+  const handleCreateAccount = async () => {
+    await createAccount({
+      username: createUsername.value,
+      password: createPassword.value,
+      confirm_password: createConfirmPassword.value,
+    });
+  };
+
+  const handleLogin = async () => {
+    await login({
+      username: loginUsername.value,
+      password: loginPassword.value,
+    });
+  };
+
+  useEffect(() => {
+    //console.log(errors?.username)
+  }, [errors]);
+
+  useEffect(() => {
+    //console.log(user)
+    if (user !== null && user !== undefined) {
+      localStorage.setItem("session", JSON.stringify(user));
+      router.push("/welcome");
+    }
+  }, [user]);
+
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
       {!isWelcome ? (
-        <div
-          className={`rounded shadow-lg p-5 ${
-            size.width <= 990 ? "w-100" : "w-50"
-          }`}
-        >
+        <div className={`p-5 ${size.width <= 990 ? "w-100" : "w-50"}`}>
           <h1 className="text-center mb-4 h1-gradient">ToDo App</h1>
           <Button
             onClick={() => setIsLogin(true)}
@@ -54,7 +91,7 @@ export default function Welcome() {
                       "linear-gradient(72deg, rgba(235, 51, 72, 1) 0%, rgba(241, 81, 68, 1) 100%)",
                   }
             }
-            className={`me-3 ${isLogin && "shadow"}`}
+            className={`me-3  ${isLogin && ""}`}
           >
             Login
           </Button>
@@ -71,7 +108,7 @@ export default function Welcome() {
                       "linear-gradient(72deg, rgba(235, 51, 72, 1) 0%, rgba(241, 81, 68, 1) 100%)",
                   }
             }
-            className={`me-3 ${!isLogin && "shadow"}`}
+            className={`me-3 ${!isLogin && ""}`}
           >
             Create Account
           </Button>
@@ -93,21 +130,16 @@ export default function Welcome() {
               <p>Good to see you again</p>
               <Form>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                  <Form.Control {...username} />
+                  <Form.Control {...loginUsername} />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicPassword">
-                  <Form.Control {...password} />
+                  <Form.Control {...loginPassword} />
                 </Form.Group>
                 <div className="w-100 d-flex justify-content-center">
                   <Button
                     variant="primary"
-                    className="w-75"
-                    onClick={() =>
-                      createAccount({
-                        username: username.value,
-                        password: password.value,
-                      })
-                    }
+                    className="w-75 shadow"
+                    onClick={() => handleLogin()}
                   >
                     Login
                   </Button>
@@ -131,25 +163,23 @@ export default function Welcome() {
               <h3 className="mt-4">Create Account</h3>
               <p>Get started now!</p>
               <Form>
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                  <Form.Control {...username} />
+                <Form.Group className="mb-3" controlId="username">
+                  <Form.Control {...createUsername} />
+                  <p className="text-danger">{errors?.username}</p>
                 </Form.Group>
-                <Form.Group className="mb-3" controlId="formBasicPassword">
-                  <Form.Control {...password} />
+                <Form.Group className="mb-3" controlId="password">
+                  <Form.Control {...createPassword} />
+                  <p className="text-danger">{errors?.password}</p>
                 </Form.Group>
-                <Form.Group className="mb-3" controlId="formBasicPassword">
-                  <Form.Control {...confirmPassword} />
+                <Form.Group className="mb-3" controlId="confirm_password">
+                  <Form.Control {...createConfirmPassword} />
+                  <p className="text-danger">{errors?.confirm_password}</p>
                 </Form.Group>
                 <div className="w-100 d-flex justify-content-center">
                   <Button
                     variant="primary"
-                    className="w-75"
-                    onClick={() =>
-                      createAccount({
-                        username: username.value,
-                        password: password.value,
-                      })
-                    }
+                    className="w-75 shadow"
+                    onClick={() => handleCreateAccount()}
                   >
                     Create Account
                   </Button>
