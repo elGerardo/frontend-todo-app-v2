@@ -5,7 +5,7 @@ const ERRORS_MESSAGES_FORMAT = {
   "This field is required.": "Fill up this field",
   "This_field_may_not_be_blank.": "Fill up this field",
   "user_with_this_username_already_exists.": "This UserName already exist",
-  "confirm_password_is_not_the_same": "Both passwords must be the same",
+  confirm_password_is_not_the_same: "Both passwords must be the same",
 };
 
 const ERRORS_MESSAGES = {
@@ -36,10 +36,10 @@ const useUser = create((set) => ({
         }
       )
       .catch((error) => {
-        const status = error.response.status
+        const status = error.response.status;
 
         if (error.response.status === 422) {
-          console.log("entra a format errors")
+          console.log("entra a format errors");
           errors = {
             ...(error.response.data.username !== undefined && {
               username: ERRORS_MESSAGES[status]["username"](
@@ -59,6 +59,40 @@ const useUser = create((set) => ({
           };
         }
       });
+
+    if (response?.data !== undefined) {
+      localStorage.setItem(
+        process.env.NEXT_PUBLIC_SESSION_STORAGE,
+        JSON.stringify(response.data)
+      );
+    }
+
+    set({ user: response?.data, errors });
+  },
+  login: async ({ username, password }) => {
+    let errors = null;
+    let response = null;
+
+    response = await axios
+      .post(
+        `${NEXT_PUBLIC_API_BASE_URL}/user/login`,
+        { username, password },
+        {
+          headers: { "content-type": "application/json" },
+        }
+      )
+      .catch(() => {
+        errors = {
+          message: "Invalid credentials",
+        };
+      });
+
+    if (response?.data !== undefined) {
+      localStorage.setItem(
+        process.env.NEXT_PUBLIC_SESSION_STORAGE,
+        JSON.stringify(response.data)
+      );
+    }
 
     set({ user: response?.data, errors });
   },
