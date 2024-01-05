@@ -1,13 +1,14 @@
 import { useState } from "react";
 
-export let useField = ({ type, required, placeholder }) => {
-  let [value, setValue] = useState("");
+export let useField = ({ as, type, required, placeholder }) => {
+  const [value, setValue] = useState("");
 
-  let onChange = (e) => {
+  const onChange = (e) => {
     setValue(e.target.value);
   };
 
   return {
+    as,
     required,
     type,
     value,

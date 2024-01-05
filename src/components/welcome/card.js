@@ -15,7 +15,7 @@ export default function Card({ text }) {
               className="align-middle"
             />
           </Dropdown.Toggle>
-          <Dropdown.Menu>
+          <Dropdown.Menu className="shadow-lg">
             <Dropdown.Item>Edit</Dropdown.Item>
             <Dropdown.Item>Delete</Dropdown.Item>
           </Dropdown.Menu>
