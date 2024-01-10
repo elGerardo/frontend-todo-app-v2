@@ -104,3 +104,24 @@ body {
 .dropdown-toggle::after {
     display: none !important;
 }
+
+.color-option {
+    cursor: pointer;
+    height: 40px;
+    width: 40px;
+}
+
+/*.form-check-input {
+    background-color: red;
+}
+
+.form-check-input:active {
+    background-color: yellow !important;
+}
+
+.form-check-input:checked {
+    background-color: orange !important;
+    outline: red !important;
+    border-color: #6A717F !important;
+}
+*/
