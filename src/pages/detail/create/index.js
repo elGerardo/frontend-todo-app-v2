@@ -71,9 +71,9 @@ export default function DeatilCreate() {
       await store(
         {
           title: title.value,
-          description: description.value,
           type,
           color: selectedColor,
+          ...(description.value !== "" && { description: description.value }),
         },
         tasks,
         user.access
@@ -90,12 +90,12 @@ export default function DeatilCreate() {
       steps[index] = {
         order,
         title: listFields[index]["title"]["value"],
-        description:
-          listFields[index]["title"]["description"] !== undefined
-            ? listFields[index]["title"]["description"]
-            : "N/A",
         color: selectedColor,
+        ...(listFields[index]["description"]["value"] !== "" && {
+          description: listFields[index]["description"]["value"],
+        }),
       };
+
       order++;
 
       if (listFields[index]["title"]["value"] === "") {
@@ -117,9 +117,9 @@ export default function DeatilCreate() {
       {
         type,
         title: title.value,
-        description: description.value !== "" ? description.value : "N/A",
         color: selectedColor,
         steps,
+        ...(description.value !== "" && { description: description.value }),
       },
       tasks,
       user.access
@@ -346,9 +346,6 @@ export default function DeatilCreate() {
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Control {...description} />
-                {errors !== null && (
-                  <p className="text-danger">{errors["description"]}</p>
-                )}
               </Form.Group>
               {isNote && (
                 <motion.div

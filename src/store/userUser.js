@@ -21,7 +21,7 @@ const ERRORS_MESSAGES = {
 
 const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const useUser = create((set) => ({
+const useUser = create((_) => ({
   errors: null,
   user: null,
   createAccount,

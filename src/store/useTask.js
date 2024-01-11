@@ -17,9 +17,9 @@ const ERRORS_MESSAGES = {
 
 const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const useTask = create((set) => ({
+const useTask = create((_) => ({
   errors: null,
-  tasks: null,
+  tasks: [],
   store,
   get,
   find,

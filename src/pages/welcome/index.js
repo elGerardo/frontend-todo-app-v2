@@ -88,7 +88,7 @@ export default function Welcome() {
                     key={id}
                     id={id}
                     className="masonry-item"
-                    text={description}
+                    text={description !== null ? description : ""}
                     title={title}
                     progress={
                       type === "list"
@@ -96,6 +96,7 @@ export default function Welcome() {
                             .length
                         : undefined
                     }
+                    steps={steps}
                     totalTasks={type === "list" ? steps.length : undefined}
                   />
                 );

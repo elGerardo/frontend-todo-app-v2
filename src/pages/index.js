@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Form, Button } from "react-bootstrap";
 import { motion } from "framer-motion";
 import useWindowSize from "@/hooks/useWindowsSize";
-import useUser from "../store/userUser";
+import { useUser } from "../store/userUser";
 import { useField } from "@/hooks/useField";
 import { useRouter } from "next/router";
 
