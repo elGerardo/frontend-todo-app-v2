@@ -4,7 +4,8 @@ import { create } from "zustand";
 const ERRORS_MESSAGES_FORMAT = {
   "This_field_is_required.": "Fill up this field",
   "This_field_may_not_be_blank.": "Fill up this field",
-  "Ensure_this_field_has_no_more_than_255_characters.": "No more 255 characters"
+  "Ensure_this_field_has_no_more_than_255_characters.":
+    "No more 255 characters",
 };
 
 const ERRORS_MESSAGES = {
@@ -56,12 +57,16 @@ async function store(body, tasks, access) {
   useTask.setState({ tasks, errors });
 }
 
-async function get(access) {
+async function get(access, search = null) {
   let errors = null;
   let response = null;
+  let baseUrl = `${NEXT_PUBLIC_API_BASE_URL}/task`;
+  if (search !== null) {
+    baseUrl = `${NEXT_PUBLIC_API_BASE_URL}/task?search=${search}`;
+  }
 
   response = await axios
-    .get(`${NEXT_PUBLIC_API_BASE_URL}/task`, {
+    .get(baseUrl, {
       headers: {
         "content-type": "application/json",
         Authorization: `Bearer ${access}`,

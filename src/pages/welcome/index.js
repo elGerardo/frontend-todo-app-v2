@@ -6,25 +6,31 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@/store/userUser";
-import { useTask } from "@/store/useTask";
+import { get, useTask } from "@/store/useTask";
+import { useDebounce } from "@uidotdev/usehooks";
 
 const STATUS_COMPLETED = "COMPLETED";
 
 export default function Welcome() {
   const { user, find } = useUser();
   const { tasks, destroy, finishStep } = useTask();
-
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
-
   const search = useField({
     type: "text",
     required: false,
     placeholder: "Search...",
   });
 
+  const debouncedSearch = useDebounce(search.value, 1000);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
   const handleOnDeleteTaks = async (task_id) => {
     await destroy(task_id, tasks, user.access);
+  };
+
+  const handleOnSearch = async (value) => {
+    search.onChange({ target: { value } });
   };
 
   const handleStepFinished = async (task_id, step_id) => {
@@ -76,67 +82,80 @@ export default function Welcome() {
       setIsLoading(false);
     }
     checkSession();
-  }, []);
+  });
 
-  return (
-    !isLoading ? (
-      <motion.div
-        key="welcome"
-        initial={{ opacity: 0, x: -25 }}
-        transition={{ x: { duration: 0.2 } }}
-        animate={{
-          x: 0,
-          opacity: 1,
-          transition: {
-            duration: 0.2,
-          },
-        }}
-        exit={{ opacity: 0, x: 25 }}
-      >
-        <div className="d-flex flex-column align-items-center">
-          <div style={{ maxWidth: "700px" }} className="w-100">
-            <Header />
-            <Form>
-              <Form.Group className="mb-3" controlId="formBasicEmail">
-                <Form.Control {...search} />
-              </Form.Group>
-            </Form>
-            {tasks !== null &&
-              tasks.map(({ id, description, title, type, steps, color }) => {
-                const filteredSteps = steps.filter(
-                  (step) => step.status !== STATUS_COMPLETED
-                );
-                return (
-                  <Card
-                    backgroundColor={color}
-                    onDelete={handleOnDeleteTaks}
-                    key={id}
-                    id={id}
-                    className="masonry-item"
-                    text={description !== null ? description : ""}
-                    title={title}
-                    progress={
-                      type === "list"
-                        ? steps.filter(
-                            ({ status }) => status === STATUS_COMPLETED
-                          ).length
-                        : undefined
-                    }
-                    steps={
-                      type === "list"
-                        ? filteredSteps.length === 0
-                          ? [steps[steps.length - 1]]
-                          : filteredSteps
-                        : []
-                    }
-                    totalTasks={type === "list" ? steps.length : undefined}
-                    onChangeStep={(step_id) => handleStepFinished(id, step_id)}
-                  />
-                );
-              })}
-          </div>
+  useEffect(() => {
+    const getTasks = async () => {
+      if(user !== null) await get(user.access, debouncedSearch);
+    };
+
+    getTasks();
+  }, [debouncedSearch]);
+
+  return !isLoading ? (
+    <motion.div
+      key="welcome"
+      initial={{ opacity: 0, x: -25 }}
+      transition={{ x: { duration: 0.2 } }}
+      animate={{
+        x: 0,
+        opacity: 1,
+        transition: {
+          duration: 0.2,
+        },
+      }}
+      exit={{ opacity: 0, x: 25 }}
+    >
+      <div className="d-flex flex-column align-items-center">
+        <div style={{ maxWidth: "700px" }} className="w-100">
+          <Header />
+          <Form>
+            <Form.Group className="mb-3" controlId="formBasicEmail">
+              <Form.Control
+                {...search}
+                onChange={(e) => handleOnSearch(e.target.value)}
+              />
+            </Form.Group>
+          </Form>
+          {tasks !== null &&
+            tasks.map(({ id, description, title, type, steps, color }) => {
+              const filteredSteps = steps.filter(
+                (step) => step.status !== STATUS_COMPLETED
+              );
+              return (
+                <Card
+                  backgroundColor={color}
+                  onDelete={handleOnDeleteTaks}
+                  key={id}
+                  id={id}
+                  className="masonry-item"
+                  text={description !== null ? description : ""}
+                  title={title}
+                  progress={
+                    type === "list"
+                      ? steps.filter(
+                          ({ status }) => status === STATUS_COMPLETED
+                        ).length
+                      : undefined
+                  }
+                  steps={
+                    type === "list"
+                      ? filteredSteps.length === 0
+                        ? [steps[steps.length - 1]]
+                        : filteredSteps
+                      : []
+                  }
+                  totalTasks={type === "list" ? steps.length : undefined}
+                  onChangeStep={(step_id) => handleStepFinished(id, step_id)}
+                />
+              );
+            })}
         </div>
-      </motion.div>
-    ) : <div className="loading text-center mt-5"><Spinner animation="border" variant="secondary"/></div>
+      </div>
+    </motion.div>
+  ) : (
+    <div className="loading text-center mt-5">
+      <Spinner animation="border" variant="secondary" />
+    </div>
   );
 }
