@@ -1,10 +1,8 @@
-import "bootstrap/dist/css/bootstrap.min.css";
-import "../global.css";
-import { Container } from "react-bootstrap";
-
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
 config.autoAddCss = false;
+import "@/styles/global.css";
+import { Container } from "react-bootstrap";
 
 const App = ({ Component, pageProps }) => {
   return (
