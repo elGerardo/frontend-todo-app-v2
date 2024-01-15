@@ -63,7 +63,7 @@ export default function Welcome() {
     await login({
       username: loginUsername.value,
       password: loginPassword.value,
-    });
+    });    
   };
 
   useEffect(() => {
@@ -78,7 +78,10 @@ export default function Welcome() {
   }, [isLoading]);
 
   useEffect(() => {
-    if (errors !== null) setLoginError(errors.message);
+    if (errors !== null) {
+      setLoginError(errors.message)
+      setIsProcessing(false)
+    };
   }, [errors]);
 
   useEffect(() => {
