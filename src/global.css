@@ -136,3 +136,7 @@ body {
     position: absolute;
     transition: all ease-in-out 0.2s;
 }
+
+.loading .text-secondary {
+    color:rgb(234, 120, 133) !important;
+}

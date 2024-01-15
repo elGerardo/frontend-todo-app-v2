@@ -98,6 +98,7 @@ async function login({ username, password }) {
       process.env.NEXT_PUBLIC_SESSION_STORAGE,
       JSON.stringify(response.data)
     );
+    await getTasks(response.data.access)
   }
 
   useUser.setState({ user: response?.data, errors });

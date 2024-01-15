@@ -3,7 +3,10 @@ import { faEllipsis } from "@fortawesome/free-solid-svg-icons";
 import { Dropdown, ProgressBar } from "react-bootstrap";
 import Check from "../shared/check";
 
+const STATUS_COMPLETED = "COMPLETED";
+
 export default function Card({
+  backgroundColor,
   id,
   title,
   text,
@@ -25,14 +28,20 @@ export default function Card({
 
         const nextElement = document.getElementById(next_id);
         nextElement.style.marginTop = "0px";
+        onChangeStep(id);
+        return;
       }
+      onChangeStep(id);
     }, 250);
   };
 
   let marginTop = 50;
 
   return (
-    <div className="bg-white shadow-sm rounded m-3">
+    <div
+      className="shadow-sm rounded m-3"
+      style={{ backgroundColor: backgroundColor }}
+    >
       <div className="d-flex justify-content-between p-1">
         <h5 className="p-2">{title}</h5>
         <Dropdown className="p-1">
@@ -44,21 +53,20 @@ export default function Card({
             />
           </Dropdown.Toggle>
           <Dropdown.Menu className="shadow-lg">
-            <Dropdown.Item>Edit</Dropdown.Item>
             <Dropdown.Item onClick={() => handleOnDelete(id)}>
               Delete
             </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       </div>
-      <div className="p-3">
+      <div className="p-3 bg-white">
         <p>
           {text.substring(0, 250)}
           {text.length > 250 && <span>...</span>}
         </p>
         {steps.length > 0 && (
-          <div className="ov-hidden">
-            {steps.map(({ id, title, description }, index) => {
+          <div className="ov-hidden mb-2">
+            {steps.map(({ id, title, description, status }, index) => {
               return (
                 <div
                   key={id}
@@ -67,20 +75,8 @@ export default function Card({
                   className="d-flex"
                 >
                   <div className="d-flex justify-content-center mx-3">
-                    {/*<Form.Check
-                      className="check-primary"
-                      type={"radio"}
-                      onChange={() =>
-                        handleOnCompletedItem(
-                          id,
-                          steps[index + 1] !== undefined
-                            ? steps[index + 1]["id"]
-                            : undefined
-                        )
-                      }
-                    />*/}
                     <Check
-                      isFinished={false}
+                      isFinished={status === STATUS_COMPLETED ? true : false}
                       onClick={() =>
                         handleOnCompletedItem(
                           id,
@@ -105,7 +101,6 @@ export default function Card({
         )}
         {progress !== undefined && totalTasks !== undefined && (
           <ProgressBar
-            className={`mt-4`}
             now={(progress / totalTasks) * 100}
             label={`${((progress / totalTasks) * 100).toFixed(0)} %`}
           />

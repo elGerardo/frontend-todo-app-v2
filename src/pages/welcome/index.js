@@ -1,16 +1,18 @@
 import Card from "@/components/welcome/card";
 import Header from "@/components/welcome/header";
 import { useField } from "@/hooks/useField";
-import { Form } from "react-bootstrap";
+import { Form, Spinner } from "react-bootstrap";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "@/store/userUser";
 import { useTask } from "@/store/useTask";
 
+const STATUS_COMPLETED = "COMPLETED";
+
 export default function Welcome() {
   const { user, find } = useUser();
-  const { tasks, destroy } = useTask();
+  const { tasks, destroy, finishStep } = useTask();
 
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -23,6 +25,25 @@ export default function Welcome() {
 
   const handleOnDeleteTaks = async (task_id) => {
     await destroy(task_id, tasks, user.access);
+  };
+
+  const handleStepFinished = async (task_id, step_id) => {
+    const task = tasks.find((task) => task.id === task_id);
+    const step = task.steps.find((step) => step.id === step_id);
+
+    await finishStep(
+      task_id,
+      step_id,
+      {
+        title: step.title,
+        description: step.description,
+        color: step.color,
+        order: step.order,
+        status: STATUS_COMPLETED,
+      },
+      user.access,
+      tasks
+    );
   };
 
   useEffect(() => {
@@ -58,7 +79,7 @@ export default function Welcome() {
   }, []);
 
   return (
-    !isLoading && (
+    !isLoading ? (
       <motion.div
         key="welcome"
         initial={{ opacity: 0, x: -25 }}
@@ -81,9 +102,13 @@ export default function Welcome() {
               </Form.Group>
             </Form>
             {tasks !== null &&
-              tasks.map(({ id, description, title, type, steps }) => {
+              tasks.map(({ id, description, title, type, steps, color }) => {
+                const filteredSteps = steps.filter(
+                  (step) => step.status !== STATUS_COMPLETED
+                );
                 return (
                   <Card
+                    backgroundColor={color}
                     onDelete={handleOnDeleteTaks}
                     key={id}
                     id={id}
@@ -92,18 +117,26 @@ export default function Welcome() {
                     title={title}
                     progress={
                       type === "list"
-                        ? steps.filter(({ status }) => status === "COMPLETED")
-                            .length
+                        ? steps.filter(
+                            ({ status }) => status === STATUS_COMPLETED
+                          ).length
                         : undefined
                     }
-                    steps={steps}
+                    steps={
+                      type === "list"
+                        ? filteredSteps.length === 0
+                          ? [steps[steps.length - 1]]
+                          : filteredSteps
+                        : []
+                    }
                     totalTasks={type === "list" ? steps.length : undefined}
+                    onChangeStep={(step_id) => handleStepFinished(id, step_id)}
                   />
                 );
               })}
           </div>
         </div>
       </motion.div>
-    )
+    ) : <div className="loading text-center mt-5"><Spinner animation="border" variant="secondary"/></div>
   );
 }

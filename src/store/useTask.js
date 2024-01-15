@@ -4,6 +4,7 @@ import { create } from "zustand";
 const ERRORS_MESSAGES_FORMAT = {
   "This_field_is_required.": "Fill up this field",
   "This_field_may_not_be_blank.": "Fill up this field",
+  "Ensure_this_field_has_no_more_than_255_characters.": "No more 255 characters"
 };
 
 const ERRORS_MESSAGES = {
@@ -22,8 +23,8 @@ const useTask = create((_) => ({
   tasks: [],
   store,
   get,
-  find,
   destroy,
+  finishStep,
 }));
 
 async function store(body, tasks, access) {
@@ -51,8 +52,8 @@ async function store(body, tasks, access) {
         }),
       };
     });
-    if(errors === null) tasks.push(response?.data)
-    useTask.setState({ tasks, errors });
+  if (errors === null) tasks.push(response?.data);
+  useTask.setState({ tasks, errors });
 }
 
 async function get(access) {
@@ -75,11 +76,9 @@ async function get(access) {
   useTask.setState({ tasks: response?.data, errors });
 }
 
-async function find(task_id) {}
-
 async function destroy(task_id, tasks, access) {
   let errors = null;
-  
+
   await axios
     .delete(`${NEXT_PUBLIC_API_BASE_URL}/task/${task_id}`, {
       headers: {
@@ -99,4 +98,29 @@ async function destroy(task_id, tasks, access) {
   });
 }
 
-export { useTask, get, store, find, destroy };
+async function finishStep(task_id, step_id, body, access, tasks) {
+  let errors = null;
+  let response = null;
+
+  response = await axios
+    .put(`${NEXT_PUBLIC_API_BASE_URL}/task/${task_id}/step/${step_id}`, body, {
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${access}`,
+      },
+    })
+    .catch((_) => {
+      errors = {
+        message: "Invalid",
+      };
+    });
+
+  if (errors === null) {
+    tasks
+      .find((task) => task.id === task_id)
+      .steps.find((step) => step.id === step_id).status = "COMPLETED";
+  }
+  useTask.setState({ tasks, errors });
+}
+
+export { useTask, get, store, finishStep, destroy };

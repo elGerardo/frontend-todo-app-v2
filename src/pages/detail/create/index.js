@@ -1,7 +1,14 @@
 import { useField } from "@/hooks/useField";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { motion } from "framer-motion";
-import { Form, Button, Dropdown } from "react-bootstrap";
+import {
+  Form,
+  Button,
+  Dropdown,
+  Spinner,
+  Toast,
+  ToastContainer,
+} from "react-bootstrap";
 import {
   faChevronLeft,
   faNoteSticky,
@@ -19,10 +26,11 @@ import { useUser } from "@/store/userUser";
 import { useRouter } from "next/router";
 
 const COLOR_OPTIONS = [
+  "#FFFFFF",
+  "#FFFE91",
   "#FF9492",
   "#FFB18A",
   "#FFCE7F",
-  "#FFFE91",
   "#97FE93",
   "#04FDC9",
   "#4CCEE4",
@@ -30,13 +38,13 @@ const COLOR_OPTIONS = [
   "#AF92FF",
   "#FF9DFF",
   "#FFC8FF",
-  "#C4B2FE",
 ];
 
 export default function DeatilCreate() {
   const router = useRouter();
   const [isNote, setIsNote] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
+  const [sendIsLoading, setSendIsLoading] = useState(false);
 
   const title = useField({
     type: "text",
@@ -59,6 +67,7 @@ export default function DeatilCreate() {
   const [listFields, setListFields] = useState([]);
   const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0]);
   const [isSelectingColor, setIsSelectingColor] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const handleListFielOnChange = (field, value, indexItem) => {
     const currentListFields = [...listFields];
@@ -67,6 +76,7 @@ export default function DeatilCreate() {
   };
 
   const handleFinish = async (type) => {
+    setSendIsLoading(true);
     if (type === "note") {
       await store(
         {
@@ -78,6 +88,14 @@ export default function DeatilCreate() {
         tasks,
         user.access
       );
+
+      if (title.value !== "" && description.value.length < 255) {
+        setShowSuccessMessage(true);
+        title.onChange({ target: { value: "" } });
+        description.onChange({ target: { value: "" } });
+        setListFields([]);
+      }
+      setSendIsLoading(false);
       return;
     }
 
@@ -108,6 +126,7 @@ export default function DeatilCreate() {
 
     if (hasErrors) {
       setListFieldErrors(listErors);
+      setSendIsLoading(false);
       return;
     } else {
       setListFieldErrors([]);
@@ -124,6 +143,14 @@ export default function DeatilCreate() {
       tasks,
       user.access
     );
+
+    if (title.value !== "" && description.value.length < 255) {
+      setShowSuccessMessage(true);
+      title.onChange({ target: { value: "" } });
+      description.onChange({ target: { value: "" } });
+      setListFields([]);
+    }
+    setSendIsLoading(false);
   };
 
   const handleAddListField = () => {
@@ -327,7 +354,9 @@ export default function DeatilCreate() {
                       return (
                         <div
                           key={`${index}-${item}`}
-                          className="color-option rounded mx-1 my-1"
+                          className={`color-option rounded mx-1 my-1 ${
+                            item === "#FFFFFF" && "border"
+                          }`}
                           style={{ backgroundColor: item }}
                           onClick={() => handleSelectedColor(item)}
                         />
@@ -346,6 +375,9 @@ export default function DeatilCreate() {
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Control {...description} />
+                {errors !== null && (
+                  <p className="text-danger">{errors["description"]}</p>
+                )}
               </Form.Group>
               {isNote && (
                 <motion.div
@@ -363,13 +395,44 @@ export default function DeatilCreate() {
                   }}
                   exit={{ opacity: 0, x: -25 }}
                 >
-                  <Button
-                    variant="primary"
-                    className="mb-3"
-                    onClick={() => handleFinish("note")}
-                  >
-                    Finish
-                  </Button>
+                  {!sendIsLoading ? (
+                    <div className="d-flex align-items-center">
+                      <Button
+                        variant="primary"
+                        className="mb-3"
+                        onClick={() => handleFinish("note")}
+                      >
+                        Finish
+                      </Button>
+                      {showSuccessMessage && (
+                        <motion.div
+                          className="ms-3"
+                          key="showSuccessMessage"
+                          initial={{ opacity: 0, x: 25 }}
+                          onAnimationComplete={() =>
+                            setTimeout(() => {
+                              setShowSuccessMessage(false);
+                            }, 2000)
+                          }
+                          transition={{ x: { duration: 0.2 } }}
+                          animate={{
+                            x: 0,
+                            opacity: 1,
+                            transition: {
+                              duration: 0.2,
+                            },
+                          }}
+                          exit={{ opacity: 0, x: -25 }}
+                        >
+                          <p className="text-success fw-bold">Success!</p>
+                        </motion.div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="loading">
+                      <Spinner animation="border" variant="secondary" />
+                    </div>
+                  )}
                 </motion.div>
               )}
               {!isNote && (
@@ -389,21 +452,52 @@ export default function DeatilCreate() {
                   exit={{ opacity: 0, x: -25 }}
                 >
                   <div className="d-flex">
-                    <Button
-                      variant="primary"
-                      className="mb-3"
-                      onClick={() => handleFinish("list")}
-                      disabled={listFields.length === 0 ? true : false}
-                    >
-                      Finish
-                    </Button>
-                    <Button
-                      variant="primary ms-3"
-                      className="mb-3"
-                      onClick={() => handleAddListField()}
-                    >
-                      <FontAwesomeIcon icon={faPlus} />
-                    </Button>
+                    {!sendIsLoading ? (
+                      <div className="d-flex align-items-center">
+                        <Button
+                          variant="primary"
+                          className="mb-3"
+                          onClick={() => handleFinish("list")}
+                          disabled={listFields.length === 0 ? true : false}
+                        >
+                          Finish
+                        </Button>
+                        <Button
+                          variant="primary ms-3"
+                          className="mb-3"
+                          onClick={() => handleAddListField()}
+                        >
+                          <FontAwesomeIcon icon={faPlus} />
+                        </Button>
+                        {showSuccessMessage && (
+                          <motion.div
+                            className="ms-3"
+                            key="showSuccessMessage"
+                            initial={{ opacity: 0, x: 25 }}
+                            onAnimationComplete={() =>
+                              setTimeout(() => {
+                                setShowSuccessMessage(false);
+                              }, 2000)
+                            }
+                            transition={{ x: { duration: 0.2 } }}
+                            animate={{
+                              x: 0,
+                              opacity: 1,
+                              transition: {
+                                duration: 0.2,
+                              },
+                            }}
+                            exit={{ opacity: 0, x: -25 }}
+                          >
+                            <p className="text-success fw-bold">Success!</p>
+                          </motion.div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="loading">
+                        <Spinner animation="border" variant="secondary" />
+                      </div>
+                    )}
                   </div>
                   <DragDropContext onDragEnd={handleOnDragEnd}>
                     <Droppable droppableId="listFieldDroppable">

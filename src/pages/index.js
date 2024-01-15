@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Form, Button } from "react-bootstrap";
+import { Form, Button, Spinner } from "react-bootstrap";
 import { motion } from "framer-motion";
 import useWindowSize from "@/hooks/useWindowsSize";
 import { useUser } from "../store/userUser";
@@ -14,6 +14,7 @@ export default function Welcome() {
   const [loginError, setLoginError] = useState("");
   const { createAccount, login, user, errors } = useUser();
   const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const loginUsername = useField({
     type: "text",
@@ -49,6 +50,7 @@ export default function Welcome() {
   };
 
   const handleCreateAccount = async () => {
+    setIsProcessing(true);
     await createAccount({
       username: createUsername.value,
       password: createPassword.value,
@@ -57,6 +59,7 @@ export default function Welcome() {
   };
 
   const handleLogin = async () => {
+    setIsProcessing(true)
     await login({
       username: loginUsername.value,
       password: loginPassword.value,
@@ -64,7 +67,9 @@ export default function Welcome() {
   };
 
   useEffect(() => {
-    const session = localStorage.getItem(process.env.NEXT_PUBLIC_SESSION_STORAGE);
+    const session = localStorage.getItem(
+      process.env.NEXT_PUBLIC_SESSION_STORAGE
+    );
     if (session !== null) {
       router.push("/welcome");
     } else {
@@ -150,13 +155,19 @@ export default function Welcome() {
                   </Form.Group>
                   <p className="text-danger">{loginError}</p>
                   <div className="w-100 d-flex justify-content-center">
-                    <Button
-                      variant="primary"
-                      className="w-75 shadow"
-                      onClick={() => handleLogin()}
-                    >
-                      Login
-                    </Button>
+                    {!isProcessing ? (
+                      <Button
+                        variant="primary"
+                        className="w-75 shadow"
+                        onClick={() => handleLogin()}
+                      >
+                        Login
+                      </Button>
+                    ) : (
+                      <div className="loading">
+                        <Spinner animation="border" variant="secondary" />
+                      </div>
+                    )}
                   </div>
                 </Form>
               </motion.div>
@@ -190,13 +201,19 @@ export default function Welcome() {
                     <p className="text-danger">{errors?.confirm_password}</p>
                   </Form.Group>
                   <div className="w-100 d-flex justify-content-center">
-                    <Button
-                      variant="primary"
-                      className="w-75 shadow"
-                      onClick={() => handleCreateAccount()}
-                    >
-                      Create Account
-                    </Button>
+                    {!isProcessing ? (
+                      <Button
+                        variant="primary"
+                        className="w-75 shadow"
+                        onClick={() => handleCreateAccount()}
+                      >
+                        Create Account
+                      </Button>
+                    ) : (
+                      <div className="loading">
+                        <Spinner animation="border" variant="secondary" />
+                      </div>
+                    )}
                   </div>
                 </Form>
               </motion.div>
